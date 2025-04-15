@@ -16,7 +16,9 @@ struct ContentView: View {
             ("重复动画", "循环重复的动画效果", AnyView(RepeatAnimationView())),
             ("渐变过渡", "组件之间的过渡效果", AnyView(TransitionAnimationView())),
             ("手势动画", "基于手势的交互动画", AnyView(GestureAnimationView())),
-            ("组合动画", "复杂的组合动画效果", AnyView(CombinedAnimationView()))
+            ("组合动画", "复杂的组合动画效果", AnyView(CombinedAnimationView())),
+            ("环形计时器", "进度环形动画效果", AnyView(TimerRingView())),
+            ("精确计时器", "按图片代码实现的环形计时器", AnyView(ExactTimerRingView()))
         ]
     }
     
