@@ -18,7 +18,8 @@ struct ContentView: View {
             ("手势动画", "基于手势的交互动画", AnyView(GestureAnimationView())),
             ("组合动画", "复杂的组合动画效果", AnyView(CombinedAnimationView())),
             ("环形计时器", "进度环形动画效果", AnyView(TimerRingView())),
-            ("精确计时器", "按图片代码实现的环形计时器", AnyView(ExactTimerRingView()))
+            ("精确计时器", "按图片代码实现的环形计时器", AnyView(ExactTimerRingView())),
+            ("音频波纹", "语音识别波形动画效果", AnyView(AudioWaveformView()))
         ]
     }
     
