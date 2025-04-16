@@ -15,11 +15,17 @@ struct ReflectionWaveformView: View {
     let originalText = "How can I cook for you? Rare Well"
     let translatedText = "我可以为您推荐我们的招牌菜，我们这里的菜非常好吃，鱼不错，鸡肉不错，必须点的，如果你喜欢吃点辣的，可以来这个剁椒鱼头，您觉得如何？请您告诉我您喜欢哪些？"
     
-    // 波形参数
+    // 波形参数 - 只控制水平移动
     @State private var phase: CGFloat = 0
     @State private var secondPhase: CGFloat = 0
     @State private var thirdPhase: CGFloat = 0
     @State private var fourthPhase: CGFloat = 0
+    
+    // 固定振幅参数 - 不随动画变化
+    private let firstAmplitude: CGFloat = 30
+    private let secondAmplitude: CGFloat = 22
+    private let thirdAmplitude: CGFloat = 15
+    private let fourthAmplitude: CGFloat = 8
     
     var body: some View {
         ZStack {
@@ -90,10 +96,10 @@ struct ReflectionWaveformView: View {
                 
                 Spacer()
                 
-                // 波形动画
+                // 波形动画 - 只在水平方向移动
                 ZStack {
-                    // 底层波浪 - 移动最慢，振幅最大
-                    SmoothWaveform(phase: phase, amplitude: isAnimating ? 30 : 8, frequency: 0.1)
+                    // 底层波浪
+                    SmoothWaveform(phase: phase, amplitude: firstAmplitude, frequency: 0.1)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -106,11 +112,10 @@ struct ReflectionWaveformView: View {
                             )
                         )
                         .frame(height: 150)
-                        .offset(y: 20)
                         .opacity(0.85)
                     
                     // 第二层波浪
-                    SmoothWaveform(phase: secondPhase, amplitude: isAnimating ? 22 : 6, frequency: 0.13)
+                    SmoothWaveform(phase: secondPhase, amplitude: secondAmplitude, frequency: 0.13)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -123,11 +128,10 @@ struct ReflectionWaveformView: View {
                             )
                         )
                         .frame(height: 150)
-                        .offset(y: 20)
                         .opacity(0.7)
                     
                     // 第三层波浪
-                    SmoothWaveform(phase: thirdPhase, amplitude: isAnimating ? 15 : 4, frequency: 0.17)
+                    SmoothWaveform(phase: thirdPhase, amplitude: thirdAmplitude, frequency: 0.17)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -140,11 +144,10 @@ struct ReflectionWaveformView: View {
                             )
                         )
                         .frame(height: 150)
-                        .offset(y: 20)
                         .opacity(0.6)
                     
-                    // 顶层波浪 - 移动最快，振幅较小
-                    SmoothWaveform(phase: fourthPhase, amplitude: isAnimating ? 8 : 2, frequency: 0.22)
+                    // 顶层波浪
+                    SmoothWaveform(phase: fourthPhase, amplitude: fourthAmplitude, frequency: 0.22)
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -157,19 +160,18 @@ struct ReflectionWaveformView: View {
                             )
                         )
                         .frame(height: 150)
-                        .offset(y: 20)
                         .opacity(0.5)
                 }
                 .frame(height: 180)
                 .padding(.bottom, 40)
-                .blur(radius: 0.5) // 轻微增加模糊，增强水波感
+                .blur(radius: 0.5)
                 
                 // 停止按钮
                 Button(action: {
-                    isAnimating.toggle()
-                    if !isAnimating {
+                    if isAnimating {
                         showTranslation.toggle()
                     }
+                    isAnimating.toggle()
                 }) {
                     Text("点击停止")
                         .foregroundColor(.secondary)
@@ -184,7 +186,7 @@ struct ReflectionWaveformView: View {
         .navigationTitle("水中倒影波纹")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            // 启动四层波浪动画，每层使用不同的动画参数
+            // 启动波浪水平移动动画
             withAnimation(.linear(duration: 5).repeatForever(autoreverses: false)) {
                 phase = .pi * 2
             }
@@ -201,12 +203,8 @@ struct ReflectionWaveformView: View {
                 fourthPhase = .pi * 2
             }
             
-            // 2秒后启动音频波动
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                withAnimation(.easeIn(duration: 0.5)) {
-                    isAnimating = true
-                }
-            }
+            // 直接设置动画状态为true，不需要延迟
+            isAnimating = true
         }
     }
 }
@@ -233,7 +231,7 @@ struct SmoothWaveform: Shape {
         // 开始点
         path.move(to: CGPoint(x: 0, y: midHeight))
         
-        // 绘制上半部分波浪 - 使用更自然的波浪曲线
+        // 绘制上半部分波浪 - 固定波形，只有水平移动
         for x in stride(from: 0, through: width, by: 1) {
             let angle = 2 * .pi * x / wavelength + phase
             
@@ -242,16 +240,16 @@ struct SmoothWaveform: Shape {
             let secondaryWave = sin(angle * 1.8) * amplitude * 0.4
             let tertiaryWave = sin(angle * 3.2) * amplitude * 0.2
             
-            // 添加微小随机扰动，增加自然感
-            let random = sin(x/2.5) * amplitude * 0.07
+            // 添加微小随机因素，但保持固定形状（使用x的固定函数而非随机值）
+            let detailWave = sin(x/2.5) * amplitude * 0.07
             
             // 合成最终波形
-            let y = midHeight - (primaryWave + secondaryWave + tertiaryWave + random)
+            let y = midHeight - (primaryWave + secondaryWave + tertiaryWave + detailWave)
             
             path.addLine(to: CGPoint(x: x, y: y))
         }
         
-        // 连接到右下角，添加一点下沉效果
+        // 连接到右下角
         path.addLine(to: CGPoint(x: width, y: midHeight + amplitude * 0.15))
         
         // 绘制下半部分波浪（水中倒影效果）
@@ -263,11 +261,11 @@ struct SmoothWaveform: Shape {
             let secondaryWave = sin(angle * 1.8) * amplitude * 0.25
             let tertiaryWave = sin(angle * 3.2) * amplitude * 0.15
             
-            // 稍微增加随机性，模拟水下失真效果
-            let random = sin(x/2) * amplitude * 0.1
+            // 使用固定的细节波形
+            let detailWave = sin(x/2) * amplitude * 0.1
             
             // 合成最终波形，并增加一点垂直偏移，模拟水下效果
-            let y = midHeight + (primaryWave + secondaryWave + tertiaryWave + random) + amplitude * 0.2
+            let y = midHeight + (primaryWave + secondaryWave + tertiaryWave + detailWave) + amplitude * 0.2
             
             path.addLine(to: CGPoint(x: x, y: y))
         }
