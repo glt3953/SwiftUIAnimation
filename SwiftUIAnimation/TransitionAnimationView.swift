@@ -38,7 +38,8 @@ struct TransitionAnimationView: View {
                         Text(transitionNames[index]).tag(index)
                     }
                 }
-                .pickerStyle(SegmentedPickerStyle())
+//                .pickerStyle(SegmentedPickerStyle()) // 水平排列
+                .pickerStyle(MenuPickerStyle()) // 下拉菜单
                 .padding(.horizontal)
                 
                 // 卡片过渡
